@@ -12,6 +12,8 @@ class Object:
     def __repr__(self): return self.dump()
     def dump(self,depth=0):
         S = self.pad(depth) + self.head()
+        for i in self.attr:
+            S += self.pad(depth+1) + self.attr[i].head(prefix='%s = '%i)
         return S
     def head(self,prefix=''):
         return '%s<%s:%s>'%(prefix,self.tag,self.val)
@@ -27,15 +29,23 @@ class Object:
     
 class Token(Object): pass
 
-class Stack(Object):
-    def __lshift__(self,o): self.nest.append(o); return self
+class Container(Object): pass
+
+class Stack(Container):
+    def __lshift__(self,o):
+        self.nest.append(o) ; return self
+
+class Voc(Container):
+    def __lshift__(self, o):
+        if callable(o): self.attr[o.__name__] = Fn(o)
+        else: self.attr[o.val] = o
+        return self
     
-class Voc(Object):
-    def __lshift__(self,o): self.attr[o.val] = o ; return self
+class Active(Object): pass
     
-class Fn(Object):
+class Fn(Active):
     def __init__(self,F):
-        Object.__init__(self, F.__name__)
+        Active.__init__(self, F.__name__)
         self.fn = F
 
 D = Stack('DATA')
@@ -44,10 +54,11 @@ W = Voc('FORTH')
 def q(): print D
 W['?'] = Fn(q)
 
-def qq(): print W ; q() ; BYE()
+def qq(): print W ; print D ; BYE()
 W['??'] = Fn(qq)
 
 def BYE(): sys.exit(0)
+W << BYE
 
 import ply.lex as lex
 
