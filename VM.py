@@ -1,7 +1,12 @@
+## @file
+
 import sys
 
 try: SRC = sys.argv[1]
 except IndexError: SRC = 'init.4th'
+
+## @defgroup class Core Object system
+## @{
 
 class Object:
     def __init__(self,V):
@@ -47,6 +52,11 @@ class Fn(Active):
     def __init__(self,F):
         Active.__init__(self, F.__name__)
         self.fn = F
+        
+## @}
+
+## @defgroup fvm oFORTH Virtual Machine
+## @{
 
 D = Stack('DATA')
 W = Voc('FORTH')
@@ -99,3 +109,5 @@ def INTERPRET(SRC):
         FIND()
         print D
 INTERPRET(open(SRC).read())
+
+## @}
